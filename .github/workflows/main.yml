@@ -8,7 +8,7 @@ on:
   push:
     branches: [ "main" ]
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '16 14 */5 * *'
 
 
 
@@ -31,7 +31,7 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           response=$(curl -s -X GET \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/users?limit=1" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/users?count(*)" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}")
 
