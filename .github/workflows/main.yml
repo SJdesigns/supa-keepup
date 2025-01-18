@@ -45,7 +45,9 @@ jobs:
             count=$(echo "$response" | jq length)
 
             if [[ -n "$count" ]]; then
-              echo "Total de filas anteriores a la fecha actual < $current_timestamp: $count"
+              echo "Conteo del total de filas anteriores a la fecha actual."
+              echo "- Fecha actual: $current_timestamp."
+              echo "- Total de filas: $count."
             else
               echo "No se pudo obtener el conteo de filas. Revisar la respuesta de Supabase."
               echo "Respuesta completa: $response"
