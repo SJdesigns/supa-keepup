@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Keep Supabase Alive
 
 # Controls when the workflow will run
 on:
@@ -19,21 +19,43 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  keep-alive:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
-
-      # Runs a single command using the runners shell
-      - name: Run test hello
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multiline test
+      - name: Keep Supabase alive
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          response=$(curl -s -X GET \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/your_table?limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}")
+
+          if [[ $? -eq 0 ]]; then # Verifica si curl tuvo éxito (código de salida 0)
+            echo "Llamada a Supabase exitosa."
+            echo "Respuesta:"
+            echo "$response" # Imprime la respuesta JSON
+
+            # Opcional: Extraer un valor específico del JSON (ejemplo con jq)
+            if command -v jq >/dev/null 2>&1; then # Verifica si jq está instalado
+              first_id=$(echo "$response" | jq -r '.[0].id') # Asume que hay un campo 'id'
+              if [[ -n "$first_id" ]]; then
+                echo "Primer ID de la tabla: $first_id"
+              else
+                  echo "No se encontro ningun campo id en la respuesta"
+              fi
+            else
+              echo "jq no está instalado. No se puede extraer el ID."
+            fi
+
+          else
+            echo "Error en la llamada a Supabase:"
+            echo "$response" # Imprime el mensaje de error de curl
+            exit 1 # Sale del flujo de trabajo con un código de error
+          fi
+        
+
