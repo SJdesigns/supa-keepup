@@ -31,8 +31,9 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           current_timestamp=$(date +%s)
+
           response=$(curl -s -X GET \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/days?select=count(*)&date=lt.$current_timestamp" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/days?date=lt.$current_timestamp&select=*" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
           )
@@ -42,20 +43,17 @@ jobs:
             echo "Respuesta:"
             echo "$response"
 
-            # Extraer el conteo con sed (menos robusto)
-            count=$(echo "$response" | sed -E 's/.*"count":([0-9]+).*/\1/')
+            # Contar las filas en la respuesta JSON
+            count=$(echo "$response" | jq length)
 
             if [[ -n "$count" ]]; then
               echo "Total de filas en la tabla days donde date < $current_timestamp: $count"
             else
-              echo "No se pudo extraer el conteo con sed. Revisar la respuesta de Supabase."
+              echo "No se pudo obtener el conteo de filas. Revisar la respuesta de Supabase."
               echo "Respuesta completa: $response"
             fi
-
           else
             echo "Error en la llamada a Supabase:"
             echo "$response"
             exit 1
           fi
-        
-
