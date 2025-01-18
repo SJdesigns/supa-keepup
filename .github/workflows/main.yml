@@ -40,14 +40,12 @@ jobs:
 
           if [[ $? -eq 0 ]]; then
             echo "Llamada a Supabase exitosa (conteo de filas con filtro)."
-            echo "Respuesta:"
-            echo "$response"
 
             # Contar las filas en la respuesta JSON
             count=$(echo "$response" | jq length)
 
             if [[ -n "$count" ]]; then
-              echo "Total de filas en la tabla days donde date < $current_timestamp: $count"
+              echo "Total de filas anteriores a la fecha actual < $current_timestamp: $count"
             else
               echo "No se pudo obtener el conteo de filas. Revisar la respuesta de Supabase."
               echo "Respuesta completa: $response"
