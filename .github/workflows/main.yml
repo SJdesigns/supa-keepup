@@ -31,7 +31,7 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           response=$(curl -s -X GET \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/users?count(*)" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/days?select=count(*)" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}")
 
