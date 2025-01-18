@@ -30,32 +30,32 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
+          current_timestamp=$(date +%s)
           response=$(curl -s -X GET \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/days?select=count(*)" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/days?select=count(*)&date=lt.$current_timestamp" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}")
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
+          )
 
-          if [[ $? -eq 0 ]]; then # Verifica si curl tuvo éxito (código de salida 0)
-            echo "Llamada a Supabase exitosa."
+          if [[ $? -eq 0 ]]; then
+            echo "Llamada a Supabase exitosa (conteo de filas con filtro)."
             echo "Respuesta:"
-            echo "$response" # Imprime la respuesta JSON
+            echo "$response"
 
-            # Opcional: Extraer un valor específico del JSON (ejemplo con jq)
-            if command -v jq >/dev/null 2>&1; then # Verifica si jq está instalado
-              first_id=$(echo "$response" | jq -r '.[0].id') # Asume que hay un campo 'id'
-              if [[ -n "$first_id" ]]; then
-                echo "Primer ID de la tabla: $first_id"
-              else
-                  echo "No se encontro ningun campo id en la respuesta"
-              fi
+            # Extraer el conteo con sed (menos robusto)
+            count=$(echo "$response" | sed -E 's/.*"count":([0-9]+).*/\1/')
+
+            if [[ -n "$count" ]]; then
+              echo "Total de filas en la tabla days donde date < $current_timestamp: $count"
             else
-              echo "jq no está instalado. No se puede extraer el ID."
+              echo "No se pudo extraer el conteo con sed. Revisar la respuesta de Supabase."
+              echo "Respuesta completa: $response"
             fi
 
           else
             echo "Error en la llamada a Supabase:"
-            echo "$response" # Imprime el mensaje de error de curl
-            exit 1 # Sale del flujo de trabajo con un código de error
+            echo "$response"
+            exit 1
           fi
         
 
